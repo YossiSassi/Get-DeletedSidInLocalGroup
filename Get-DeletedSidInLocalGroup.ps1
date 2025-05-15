@@ -1,14 +1,19 @@
 ﻿<# 
 * Get Deleted Domain Sid(s) in Local Groups *
 Helps with assessing deleted domain accounts (showing just SIDs) in Local Group membership, to aid with cleanup later.
-Can run with SCCM (locally), WinRM (Remotely) or any other agent/tool. 
+Can run with SCCM (locally - possibly with -WriteResultToEventLog parameter), WinRM (Remotely) or any other agent/tool. 
 Results can be collected via WEC/WEF, or queried remotely from the event log, eid 666 hahaa
 
 Comments to yossis@protonmail.com
-Version 1.0
+Version 1.1 - Added ComputerName parameter (default: localhost), and a parameter to write results to EventLog
+Version 1.0 - Initial script
 #>
+param(
+    [string]$ComputerName = 'localhost',
+    [switch]$WriteResultToEventLog
+)
 
-$Obj = [ADSI]"WinNT://localhost,Computer";
+$Obj = [ADSI]"WinNT://$ComputerName,Computer";
 
 $Entries = @();
 $Entries += "DeletedAccountSid,LocalGroupName,ComputerName,AccountType";
@@ -43,9 +48,14 @@ foreach ($childObject in $($Obj.Children)) {
 
 if ($Entries.Count -gt 1)
     {
+        $($Entries | ConvertFrom-Csv | Out-String);
+
+        if ($WriteResultToEventLog) 
+        {
         # Write an event to System log with the Deletd Sids found (NOTE: Custom events cannot be created into security log)
         eventcreate /ID 666 /L SYSTEM /T INFORMATION /SO "DeletedSid_Check" /D "Deleted account Sid(s) found in local groups:`n$($Entries | ConvertFrom-Csv | Out-String)";   
         
         # Alternative: using Write-EventLog, but you need to register an event source FIRST, e.g. New-EventLog -LogName Security -Source "DeletedSid_Check"
         # Write-EventLog -LogName Security -Source 'DeletedSid_Check' -EventId 666 -EntryType Information -Message "Deleted account Sid(s) found in local groups:`n$($Entries | ConvertFrom-Csv)";
+        }
 }
