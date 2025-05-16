@@ -5,8 +5,8 @@ Can run with SCCM (locally - possibly with -WriteResultToEventLog parameter), Wi
 Results can be collected via WEC/WEF, or queried remotely from the event log if parameter -WriteResultToEventLog specific (creates event id 666 if found deleted Sids ;) or eid 667 if none found).
 
 Comments to yossis@protonmail.com
-version 1.2 - Added check for local domain Sid and specifying in 'AccountType' if deleted Sid is from a foreign domain + added 445 port ping before continuing + few error handling and other fixes
-Version 1.1 - Added ComputerName parameter (default: localhost), and a parameter to write results to EventLog
+version 1.2 - Added check for local domain Sid and specifying in 'AccountType' if deleted Sid is from a foreign domain + added 445 port ping before continuing + few error handling and other fixes.
+Version 1.1 - Added ComputerName parameter (default: localhost), and a parameter to write results to EventLog.
 Version 1.0 - Initial script
 #>
 param(
